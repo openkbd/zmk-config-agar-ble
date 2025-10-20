@@ -1,0 +1,244 @@
+#include <dt-bindings/led/led.h>
+
+&pinctrl {
+    spi0_default: spi0_default {
+        group1 {
+            psels = <NRF_PSEL(SPIM_SCK,  1, 13)>,
+                    <NRF_PSEL(SPIM_MOSI, 0, 28)>;
+        };
+    };
+
+    spi0_sleep: spi0_sleep {
+        group1 {
+            psels = <NRF_PSEL(SPIM_SCK,  1, 13)>,
+                    <NRF_PSEL(SPIM_MOSI, 0, 28)>;
+            low-power-enable;
+        };
+    };
+
+    spi3_default: spi3_default {
+        group1 {
+            psels = <NRF_PSEL(SPIM_MOSI, 0, 6)>;
+        };
+    };
+
+    spi3_sleep: spi3_sleep {
+        group1 {
+            psels = <NRF_PSEL(SPIM_MOSI, 0, 6)>;
+            low-power-enable;
+        };
+    };
+};
+
+&spi3 {
+    compatible = "nordic,nrf-spim";
+    status = "okay";
+
+    pinctrl-0 = <&spi3_default>;
+    pinctrl-1 = <&spi3_sleep>;
+    pinctrl-names = "default", "sleep";
+
+    led_strip: ws2812@0 {
+        compatible = "worldsemi,ws2812-spi";
+
+        /* SPI */
+        reg = <0>; /* ignored, but necessary for SPI bindings */
+        spi-max-frequency = <4000000>;
+
+        /* WS2812 */
+        chain-length = <1>; /* arbitrary; change at will */
+        spi-one-frame = <0x70>;
+        spi-zero-frame = <0x40>;
+
+        color-mapping = <LED_COLOR_ID_GREEN LED_COLOR_ID_RED LED_COLOR_ID_BLUE>;
+    };
+};
+
+&spi0 {
+    compatible = "nordic,nrf-spim";
+    pinctrl-0 = <&spi0_default>;
+    pinctrl-1 = <&spi0_sleep>;
+    pinctrl-names = "default", "sleep";
+    status = "okay";
+    cs-gpios = <&gpio1 0 GPIO_ACTIVE_LOW>;
+    shifter: 595@0 {
+        compatible = "zmk,gpio-595";
+        status = "okay";
+        gpio-controller;
+        spi-max-frequency = <8000000>; //default 400K to 8M, for NRF52840, spim3 max 32M, other 8M
+        reg = <0>;
+        #gpio-cells = <2>;
+        ngpios = <16>;
+    };
+};
+
+/ {
+    aliases {
+        indicator-r = &led0;
+        indicator-g = &led1;
+        indicator-b = &led2;
+    };
+    leds {
+        /* P1.11 R, P1.10 G, P0.03 B */
+        compatible = "gpio-leds";
+        status = "okay";
+        led0: led_0 { gpios = <&gpio1 11 GPIO_ACTIVE_LOW>; }; //r
+        led1: led_1 { gpios = <&gpio1 10 GPIO_ACTIVE_LOW>; }; //g
+        led2: led_2 { gpios = <&gpio0  3 GPIO_ACTIVE_LOW>; }; //b
+    };
+
+    /* soft off */
+    wakeup_scan: wakeup_scan {
+        compatible = "zmk,kscan-gpio-matrix";
+        wakeup-source;
+        diode-direction = "col2row";
+        // KEY F at RC(2,4)
+        col-gpios = <&shifter 4 GPIO_ACTIVE_LOW>;
+        row-gpios = <&gpio0 29 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+    };
+    soft_off_wakers {
+        compatible = "zmk,soft-off-wakeup-sources";
+        wakeup-sources = <&wakeup_scan>;
+    };
+    /* end of soft-off */
+
+    chosen {
+        zmk,underglow = &led_strip;
+        zmk,battery = &vbatt;
+        zmk,kscan = &kscan0;
+        zmk,physical-layout = &hhkb_layout;
+    };
+
+    vbatt: vbatt {
+        compatible = "zmk,battery-voltage-divider";
+        io-channels = <&adc 3>;
+        output-ohms = <2000000>;
+        full-ohms = <(2000000 + 820000)>;
+    };
+
+    kscan0: kscan_keys {
+        compatible = "zmk,kscan-gpio-matrix";
+        wakeup-source;
+        diode-direction = "col2row";
+        col-gpios
+            = <&shifter 0 GPIO_ACTIVE_LOW>
+            , <&shifter 1 GPIO_ACTIVE_LOW>
+            , <&shifter 2 GPIO_ACTIVE_LOW>
+            , <&shifter 3 GPIO_ACTIVE_LOW>
+            , <&shifter 4 GPIO_ACTIVE_LOW>
+            , <&shifter 5 GPIO_ACTIVE_LOW>
+            , <&shifter 6 GPIO_ACTIVE_LOW>
+            , <&shifter 7 GPIO_ACTIVE_LOW>
+            , <&shifter 8 GPIO_ACTIVE_LOW>
+            , <&shifter 9 GPIO_ACTIVE_LOW>
+            , <&shifter 10 GPIO_ACTIVE_LOW>
+            , <&shifter 11 GPIO_ACTIVE_LOW>
+            , <&shifter 12 GPIO_ACTIVE_LOW>
+            , <&shifter 13 GPIO_ACTIVE_LOW>
+            ;
+        
+        row-gpios
+            = <&gpio0 30 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
+            , <&gpio0 31 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
+            , <&gpio0 29 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
+            , <&gpio0  2 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
+            , <&gpio0  9 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
+            ;
+    };
+    
+    matrix_transform_all: matrix_transform_all {
+        compatible = "zmk,matrix-transform";
+        columns = <14>;
+        rows = <5>;
+        map = <
+RC(0,0) RC(0,1) RC(0,2) RC(0,3) RC(0,4) RC(0,5) RC(0,6) RC(0,7) RC(0,8) RC(0,9) RC(0,10) RC(0,11) RC(0,12) RC(2,12) RC(0,13)
+RC(1,0)   RC(1,1) RC(1,2) RC(1,3) RC(1,4) RC(1,5) RC(1,6) RC(1,7) RC(1,8) RC(1,9) RC(1,10) RC(1,11) RC(1,12)   RC(1,13)
+RC(2,0)     RC(2,1) RC(2,2) RC(2,3) RC(2,4) RC(2,5) RC(2,6) RC(2,7) RC(2,8) RC(2,9) RC(2,10) RC(2,11)        RC(2,13)
+RC(3,0)        RC(3,1) RC(3,2) RC(3,3) RC(3,4) RC(3,5) RC(3,6) RC(3,7) RC(3,8) RC(3,9)    RC(3,10)      RC(3,11) RC(3,13)
+         RC(4,1)   RC(4,2)                      RC(4,5)                           RC(4,10)   RC(4,11)
+        >;
+    };
+};
+
+//Multi Layouts Defines
+                    //                     w   h    x    y     rot    rx    ry
+#define ROW0_FIXED    <&key_physical_attrs 100 100    0    0       0     0     0> \
+                    , <&key_physical_attrs 100 100  100    0       0     0     0> \
+                    , <&key_physical_attrs 100 100  200    0       0     0     0> \
+                    , <&key_physical_attrs 100 100  300    0       0     0     0> \
+                    , <&key_physical_attrs 100 100  400    0       0     0     0> \
+                    , <&key_physical_attrs 100 100  500    0       0     0     0> \
+                    , <&key_physical_attrs 100 100  600    0       0     0     0> \
+                    , <&key_physical_attrs 100 100  700    0       0     0     0> \
+                    , <&key_physical_attrs 100 100  800    0       0     0     0> \
+                    , <&key_physical_attrs 100 100  900    0       0     0     0> \
+                    , <&key_physical_attrs 100 100 1000    0       0     0     0> \
+                    , <&key_physical_attrs 100 100 1100    0       0     0     0> \
+                    , <&key_physical_attrs 100 100 1200    0       0     0     0> \
+
+#define ROW0_BS_2U    <&key_physical_attrs 200 100 1301    0       0     0     0> \
+
+#define ROW0_BS_1U    <&key_physical_attrs 100 100 1300    0       0     0     0> \
+                    , <&key_physical_attrs 100 100 1400    0       0     0     0> \
+
+#define FIXED_ROWS    <&key_physical_attrs 150 100    0  100       0     0     0> \
+                    , <&key_physical_attrs 100 100  150  100       0     0     0> \
+                    , <&key_physical_attrs 100 100  250  100       0     0     0> \
+                    , <&key_physical_attrs 100 100  350  100       0     0     0> \
+                    , <&key_physical_attrs 100 100  450  100       0     0     0> \
+                    , <&key_physical_attrs 100 100  550  100       0     0     0> \
+                    , <&key_physical_attrs 100 100  650  100       0     0     0> \
+                    , <&key_physical_attrs 100 100  750  100       0     0     0> \
+                    , <&key_physical_attrs 100 100  850  100       0     0     0> \
+                    , <&key_physical_attrs 100 100  950  100       0     0     0> \
+                    , <&key_physical_attrs 100 100 1050  100       0     0     0> \
+                    , <&key_physical_attrs 100 100 1150  100       0     0     0> \
+                    , <&key_physical_attrs 100 100 1250  100       0     0     0> \
+                    , <&key_physical_attrs 150 100 1350  100       0     0     0> \
+                    , <&key_physical_attrs 175 100    0  200       0     0     0> \
+                    , <&key_physical_attrs 100 100  175  200       0     0     0> \
+                    , <&key_physical_attrs 100 100  275  200       0     0     0> \
+                    , <&key_physical_attrs 100 100  375  200       0     0     0> \
+                    , <&key_physical_attrs 100 100  475  200       0     0     0> \
+                    , <&key_physical_attrs 100 100  575  200       0     0     0> \
+                    , <&key_physical_attrs 100 100  675  200       0     0     0> \
+                    , <&key_physical_attrs 100 100  775  200       0     0     0> \
+                    , <&key_physical_attrs 100 100  875  200       0     0     0> \
+                    , <&key_physical_attrs 100 100  975  200       0     0     0> \
+                    , <&key_physical_attrs 100 100 1075  200       0     0     0> \
+                    , <&key_physical_attrs 100 100 1175  200       0     0     0> \
+                    , <&key_physical_attrs 225 100 1275  200       0     0     0> \
+                    , <&key_physical_attrs 225 100    0  300       0     0     0> \
+                    , <&key_physical_attrs 100 100  225  300       0     0     0> \
+                    , <&key_physical_attrs 100 100  325  300       0     0     0> \
+                    , <&key_physical_attrs 100 100  425  300       0     0     0> \
+                    , <&key_physical_attrs 100 100  525  300       0     0     0> \
+                    , <&key_physical_attrs 100 100  625  300       0     0     0> \
+                    , <&key_physical_attrs 100 100  725  300       0     0     0> \
+                    , <&key_physical_attrs 100 100  825  300       0     0     0> \
+                    , <&key_physical_attrs 100 100  925  300       0     0     0> \
+                    , <&key_physical_attrs 100 100 1025  300       0     0     0> \
+                    , <&key_physical_attrs 100 100 1125  300       0     0     0> \
+                    , <&key_physical_attrs 175 100 1225  300       0     0     0> \
+                    , <&key_physical_attrs 100 100 1400  300       0     0     0> \
+                    , <&key_physical_attrs 100 100  150  400       0     0     0> \
+                    , <&key_physical_attrs 150 100  250  400       0     0     0> \
+                    , <&key_physical_attrs 700 100  400  400       0     0     0> \
+                    , <&key_physical_attrs 150 100 1100  400       0     0     0> \
+                    , <&key_physical_attrs 100 100 1250  400       0     0     0> \
+
+
+// Base Layout with all keys in matrix.
+/ {
+    chosen {
+        zmk,physical-layout = &layout_all;
+    };
+    layout_all: layout_all {
+        compatible = "zmk,physical-layout";
+        display-name = "HHKB(7U)";
+        transform = <&matrix_transform_all>;
+
+        keys =    ROW0_FIXED , ROW0_BS_1U
+                , FIXED_ROWS;
+    };
+};

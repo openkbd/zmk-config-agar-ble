@@ -1,0 +1,34 @@
+#include "common.keymap"
+
+/ {
+    keymap {
+        compatible = "zmk,keymap";
+        
+        default_layer {
+
+            bindings = <
+    &gresc  &kp N1 &kp N2 &kp N3 &kp N4 &kp N5 &kp N6 &kp N7 &kp N8 &kp N9 &kp N0 &kp MINUS &kp EQUAL &kp BSLH &kp GRAVE
+    &kp TAB    &kp Q  &kp W  &kp E  &kp R  &kp T  &kp Y  &kp U  &kp I  &kp O  &kp P  &kp LBKT  &kp RBKT  &kp BSPC
+    &kp LCTRL    &kp A  &kp S  &kp D  &kp F  &kp G  &kp H  &kp J  &kp K  &kp L  &kp SEMI &kp SQT        &kp RET
+    &kp LSHFT  &kp Z  &kp X  &kp C  &kp V  &kp B  &kp N  &kp M  &kp COMMA &kp DOT &kp FSLH      &kp RSHIFT  &mo 1
+            &kp LALT  &kp LGUI             &kp SPACE                       &kp RGUI  &kp RALT
+            >;
+        };
+
+        layer1 {
+            bindings = <
+    &trans       &kp F1    &kp F2    &kp F3  &kp F4   &kp F5  &kp F6  &kp F7  &kp F8   &kp F9   &kp F10  &kp F11 &kp F12  &kp INSERT  &kp DELETE
+    &kp CAPSLOCK &kp PRINTSCREEN    &kp UP  &kp SCROLLLOCK  &trans   &trans  &trans  &Device_USB  &device_bt1 0 0  &device_bt2 0 1  &device_bt3 0 2  &kp UP_ARROW  &trans          &trans 
+    &trans       &kp LEFT  &kp DOWN  &kp RIGHT &trans  &trans  &kp KP_MULTIPLY  &kp KP_DIVIDE  &kp HOME   &kp PAGE_UP   &kp LEFT_ARROW   &kp RIGHT_ARROW        &trans 
+    &trans         &trans    &trans    &trans   &trans &bootloader_reset 0 0  &kp KP_PLUS  &kp KP_MINUS  &kp END   &kp PAGE_DOWN   &kp DOWN_ARROW   &kp C_VOL_UP  &trans
+         &trans   &trans                                    &trans                                        &kp C_MUTE    &kp C_VOL_DN
+            >;
+        };
+        layer2 { status = "reserved"; };
+        layer3 { status = "reserved"; };
+        layer4 { status = "reserved"; };
+        layer5 { status = "reserved"; };
+        layer6 { status = "reserved"; };
+        layer7 { status = "reserved"; };
+    };
+};
