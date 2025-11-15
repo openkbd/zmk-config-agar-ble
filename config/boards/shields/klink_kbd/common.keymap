@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: MIT
  */
-#define FW_VER zmk_firmware_version_251019
+#define FW_VER zmk_firmware_version_251115
  
 
 #if 1
@@ -145,7 +145,65 @@
         
         studio_unlock: studio_unlock { display-name = "zmk_reserved_studio_unlock"; };
         #endif
-
+        
+        //mouse move
+        mmu:mouse_move_up {
+            compatible = "zmk,behavior-tap-dance";
+            display-name = "Mouse Move Up";
+            #binding-cells = <0>;
+            tapping-term-ms = <0>;
+            bindings = <&mmv MOVE_UP>;
+        };
+        mmd:mouse_move_down {
+            compatible = "zmk,behavior-tap-dance";
+            display-name = "Mouse Move Down";
+            #binding-cells = <0>;
+            tapping-term-ms = <0>;
+            bindings = <&mmv MOVE_DOWN>;
+        };
+        mml:mouse_move_left {
+            compatible = "zmk,behavior-tap-dance";
+            display-name = "Mouse Move Left";
+            #binding-cells = <0>;
+            tapping-term-ms = <0>;
+            bindings = <&mmv MOVE_LEFT>;
+        };
+        mmr:mouse_move_right {
+            compatible = "zmk,behavior-tap-dance";
+            display-name = "Mouse Move Right";
+            #binding-cells = <0>;
+            tapping-term-ms = <0>;
+            bindings = <&mmv MOVE_RIGHT>;
+        };
+        //mouse scroll
+        msu:mouse_scroll_up {
+            compatible = "zmk,behavior-tap-dance";
+            display-name = "Mouse Scroll Up";
+            #binding-cells = <0>;
+            tapping-term-ms = <0>;
+            bindings = <&msc SCRL_UP>;
+        };
+        msd:mouse_scroll_down {
+            compatible = "zmk,behavior-tap-dance";
+            display-name = "Mouse Scroll Down";
+            #binding-cells = <0>;
+            tapping-term-ms = <0>;
+            bindings = <&msc SCRL_DOWN>;
+        };
+        msl:mouse_scroll_left {
+            compatible = "zmk,behavior-tap-dance";
+            display-name = "Mouse Scroll Left";
+            #binding-cells = <0>;
+            tapping-term-ms = <0>;
+            bindings = <&msc SCRL_LEFT>;
+        };
+        msr:mouse_scroll_right {
+            compatible = "zmk,behavior-tap-dance";
+            display-name = "Mouse Scroll Right";
+            #binding-cells = <0>;
+            tapping-term-ms = <0>;
+            bindings = <&msc SCRL_RIGHT>;
+        };
     };
     combos {
         compatible = "zmk,combos";
