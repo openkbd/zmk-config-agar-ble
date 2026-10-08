@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: MIT
  */
-#define FW_VER zmk_firmware_version_260830
+#define FW_VER zmk_firmware_version_261007
  
 #if 1
 #define ZMK_BEHAVIORS_OMIT_CAPS_WORD        // &caps_word
